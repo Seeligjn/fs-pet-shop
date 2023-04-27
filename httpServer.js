@@ -40,40 +40,46 @@
 //   })
 //   .listen(3000); //the server object listens on port 3000
 
+
+
+
+
+
+
+//////////////////////////////////////////////////////////
 import http from "http";
 import fs from "fs";
 
 http
-  .createServer(function (req, res) {
-    const petRegExp = /^\/pets\/(.*)$/;
-    if (req.method === "GET" && req.url === "/pets") {
+  .createServer(function (request, response) {
+    const petRegExp = /^\/pets\/(-?\d+)$/;
+    if (request.method === "GET" && request.url === "/pets") {
       fs.readFile("pets.json", "utf-8", (error, string) => {
-        res.setHeader("Content-Type", "application/json");
-        res.write(string);
-        res.end();
+        response.setHeader("Content-Type", "application/json");
+        response.write(string);
+        response.end();
       });
-    } else if (req.method === "GET" && petRegExp.test(req.url)) {
-      const petIndex = Number(req.url.match(petRegExp)[1]);
+    } else if (request.method === "GET" && petRegExp.test(request.url)) {
+      const petIndex = Number(request.url.match(petRegExp)[1]);
       fs.readFile("pets.json", "utf-8", (error, string) => {
-        res.setHeader("Content-Type", "application/json");
+        response.setHeader("Content-Type", "application/json");
         const pets = JSON.parse(string);
         const pet = pets[petIndex];
-
         if (
-          petIndex > pets.length - 1 ||
           petIndex < 0 ||
-          petIndex === undefined
+          petIndex >= pets.length
         ) {
-          res.statusCode = 404;
-          res.setHeader("Content-Type", "text/plain");
-          res.end("Not Found");
+          response.statusCode = 404;
+          response.setHeader("Content-Type", "text/plain");
+          response.end("Not Found");
         }
-        res.end(JSON.stringify(pet));
+        response.end(JSON.stringify(pet));
       });
     } else {
-      res.end();
+      response.end();
     }
   })
   .listen(3000, function () {
     console.log("listening on port 3000");
   });
+
